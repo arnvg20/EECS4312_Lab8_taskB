@@ -84,3 +84,71 @@ def test_capacity_zero_all_waitlisted_and_promotion_never_happens():
 #################################################################################
 # Add your own additional tests here to cover more cases and edge cases as needed.
 #################################################################################
+
+def test_multiple_waitlist_promotions_after_cancellations():
+    er = EventRegistration(capacity=2)
+
+    er.register("u1")
+    er.register("u2")
+    er.register("u3")
+    er.register("u4")
+
+    er.cancel("u1")
+    er.cancel("u2")
+
+    snap = er.snapshot()
+    assert snap["registered"] == ["u3", "u4"]
+    assert snap["waitlist"] == []
+
+
+def test_reregister_after_being_waitlisted_and_cancelled():
+    er = EventRegistration(capacity=1)
+
+    er.register("u1")
+    er.register("u2")  # waitlisted
+
+    er.cancel("u2")
+
+    status = er.register("u2")
+
+    assert status == UserStatus("waitlisted", 1)
+
+
+def test_status_of_nonexistent_user_returns_none():
+    er = EventRegistration(capacity=3)
+
+    er.register("u1")
+    er.register("u2")
+
+    assert er.status("u5") == UserStatus("none")
+
+
+def test_snapshot_deterministic_order_after_operations():
+    er = EventRegistration(capacity=2)
+
+    er.register("u1")
+    er.register("u2")
+    er.register("u3")
+
+    er.cancel("u1")
+
+    snap = er.snapshot()
+
+    assert snap["registered"] == ["u2", "u3"]
+    assert snap["waitlist"] == []
+
+
+def test_waitlisted_user_cancels_before_promotion():
+    er = EventRegistration(capacity=1)
+
+    er.register("u1")
+    er.register("u2")
+    er.register("u3")
+
+    er.cancel("u2")
+
+    assert er.status("u3") == UserStatus("waitlisted", 1)
+
+    snap = er.snapshot()
+    assert snap["registered"] == ["u1"]
+    assert snap["waitlist"] == ["u3"]
