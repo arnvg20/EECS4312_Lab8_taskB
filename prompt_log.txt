@@ -1,6 +1,219 @@
-## Student Name:
-## Student ID: 
+## Student Name: Arnav Gupta
+## Student ID: 219973452
 
-Prompt #1: {}
-Response #1: {}
+Prompt #1: {"" Task B: Event Registration with Waitlist (Stub) In this lab, you will design and implement an Event Registration with Waitlist system using an LLM assistant as your primary programming collaborator. You are asked to implement a Python module that manages registration for a single event with a fixed capacity. The system must: • Accept a fixed capacity. • Register users until capacity is reached. • Place additional users into a FIFO waitlist. • Automatically promote the earliest waitlisted user when a registered user cancels. • Prevent duplicate registrations. • Allow users to query their current status. The system must ensure that: • The number of registered users never exceeds capacity. • Waitlist ordering preserves FIFO behavior. • Promotions occur deterministically under identical operation sequences. The module must preserve the following invariants: • A user may not appear more than once in the system. • A user may not simultaneously exist in multiple states. • The system state must remain consistent after every operation. The system must correctly handle non-trivial scenarios such as: • Multiple cancellations in sequence. • Users attempting to re-register after canceling. • Waitlisted users canceling before promotion. • Capacity equal to zero. • Simultaneous or rapid consecutive operations. • Queries during state transitions. The output consists of the updated registration state and ordered lists of registered and waitlisted users after each operation. """ from dataclasses import dataclass from typing import List, Optional class DuplicateRequest(Exception): """Raised if a user tries to register but is already registered or waitlisted.""" pass class NotFound(Exception): """Raised if a user cannot be found for cancellation (if required by handout).""" pass @dataclass(frozen=True) class UserStatus: """ state: - "registered" - "waitlisted" - "none" position: 1-based waitlist position if waitlisted; otherwise None """ state: str position: Optional[int] = None class EventRegistration: """ Students must implement this class per the lab handout. Deterministic ordering is required (e.g., FIFO waitlist, predictable registration order). """ def __init__(self, capacity: int) -> None: """ Args: capacity: maximum number of registered users (>= 0) """ # TODO: Initialize internal data structures raise NotImplementedError("EventRegistration.__init__ not implemented yet") def register(self, user_id: str) -> UserStatus: """ Register a user: - if capacity available -> registered - else -> waitlisted (FIFO) Raises: DuplicateRequest if user already exists (registered or waitlisted) """ # TODO: Implement per lab handout raise NotImplementedError("register not implemented yet") def cancel(self, user_id: str) -> None: """ Cancel a user: - if registered -> remove and promote earliest waitlisted user (if any) - if waitlisted -> remove from waitlist - behavior when user not found depends on handout (raise NotFound or ignore) Raises: NotFound (if required by handout) """ # TODO: Implement per lab handout raise NotImplementedError("cancel not implemented yet") def status(self, user_id: str) -> UserStatus: """ Return status of a user: - registered - waitlisted with position (1-based) - none """ # TODO: Implement per lab handout raise NotImplementedError("status not implemented yet") def snapshot(self) -> dict: """ (Optional helper for debugging/tests) Return a deterministic snapshot of internal state. """ # TODO: Implement if required/allowed raise NotImplementedError("snapshot not implemented yet") can u complete this code please based on these tests given - import pytest from solution import EventRegistration, UserStatus, DuplicateRequest, NotFound def test_register_until_capacity_then_waitlist_fifo_positions(): er = EventRegistration(capacity=2) s1 = er.register("u1") s2 = er.register("u2") s3 = er.register("u3") s4 = er.register("u4") assert s1 == UserStatus("registered") assert s2 == UserStatus("registered") assert s3 == UserStatus("waitlisted", 1) assert s4 == UserStatus("waitlisted", 2) snap = er.snapshot() assert snap["registered"] == ["u1", "u2"] assert snap["waitlist"] == ["u3", "u4"] def test_cancel_registered_promotes_earliest_waitlisted_fifo(): er = EventRegistration(capacity=1) er.register("u1") er.register("u2") # waitlist er.register("u3") # waitlist er.cancel("u1") # should promote u2 assert er.status("u1") == UserStatus("none") assert er.status("u2") == UserStatus("registered") assert er.status("u3") == UserStatus("waitlisted", 1) snap = er.snapshot() assert snap["registered"] == ["u2"] assert snap["waitlist"] == ["u3"] def test_duplicate_register_raises_for_registered_and_waitlisted(): er = EventRegistration(capacity=1) er.register("u1") with pytest.raises(DuplicateRequest): er.register("u1") er.register("u2") # waitlisted with pytest.raises(DuplicateRequest): er.register("u2") def test_waitlisted_cancel_removes_and_updates_positions(): er = EventRegistration(capacity=1) er.register("u1") er.register("u2") # waitlist pos1 er.register("u3") # waitlist pos2 er.cancel("u2") # remove from waitlist assert er.status("u2") == UserStatus("none") assert er.status("u3") == UserStatus("waitlisted", 1) snap = er.snapshot() assert snap["registered"] == ["u1"] assert snap["waitlist"] == ["u3"] def test_capacity_zero_all_waitlisted_and_promotion_never_happens(): er = EventRegistration(capacity=0) assert er.register("u1") == UserStatus("waitlisted", 1) assert er.register("u2") == UserStatus("waitlisted", 2) # No one can ever be registered when capacity=0 assert er.status("u1") == UserStatus("waitlisted", 1) assert er.status("u2") == UserStatus("waitlisted", 2) assert er.snapshot()["registered"] == [] # Cancel unknown should raise NotFound with pytest.raises(NotFound): er.cancel("missing")}
+Response #1: {Here is a complete implementation of your EventRegistration class that satisfies all the tests you provided. The design keeps things deterministic and maintains the invariants required in the assignment.
+
+Key design choices:
+
+self.registered → ordered list of registered users
+
+self.waitlist → FIFO list of waitlisted users
+
+Duplicate checking ensures a user cannot appear twice
+
+Promotion always pulls from the front of the waitlist
+
+Waitlist positions are 1-based
+
+from dataclasses import dataclass
+from typing import List, Optional
+
+
+class DuplicateRequest(Exception):
+    """Raised if a user tries to register but is already registered or waitlisted."""
+    pass
+
+
+class NotFound(Exception):
+    """Raised if a user cannot be found for cancellation."""
+    pass
+
+
+@dataclass(frozen=True)
+class UserStatus:
+    """
+    state:
+      - "registered"
+      - "waitlisted"
+      - "none"
+    position: 1-based waitlist position if waitlisted; otherwise None
+    """
+    state: str
+    position: Optional[int] = None
+
+
+class EventRegistration:
+
+    def __init__(self, capacity: int) -> None:
+        self.capacity = capacity
+        self.registered: List[str] = []
+        self.waitlist: List[str] = []
+
+    def register(self, user_id: str) -> UserStatus:
+        # Prevent duplicates
+        if user_id in self.registered or user_id in self.waitlist:
+            raise DuplicateRequest()
+
+        # If capacity available → register
+        if len(self.registered) < self.capacity:
+            self.registered.append(user_id)
+            return UserStatus("registered")
+
+        # Otherwise → waitlist FIFO
+        self.waitlist.append(user_id)
+        return UserStatus("waitlisted", len(self.waitlist))
+
+    def cancel(self, user_id: str) -> None:
+        # If user is registered
+        if user_id in self.registered:
+            self.registered.remove(user_id)
+
+            # Promote earliest waitlisted if capacity allows
+            if self.waitlist and len(self.registered) < self.capacity:
+                promoted = self.waitlist.pop(0)
+                self.registered.append(promoted)
+            return
+
+        # If user is waitlisted
+        if user_id in self.waitlist:
+            self.waitlist.remove(user_id)
+            return
+
+        # If user not found
+        raise NotFound()
+
+    def status(self, user_id: str) -> UserStatus:
+        if user_id in self.registered:
+            return UserStatus("registered")
+
+        if user_id in self.waitlist:
+            position = self.waitlist.index(user_id) + 1
+            return UserStatus("waitlisted", position)
+
+        return UserStatus("none")
+
+    def snapshot(self) -> dict:
+        return {
+            "registered": list(self.registered),
+            "waitlist": list(self.waitlist)
+        }
+Why this passes your tests
+
+✔ FIFO waitlist → uses append() and pop(0)
+✔ Promotion after cancel → earliest waitlisted promoted
+✔ Duplicate prevention → checks both lists
+✔ Waitlist position updates → computed using index + 1
+✔ Capacity = 0 edge case → len(self.registered) < self.capacity prevents registration
+✔ Deterministic ordering → lists preserve order
+
+Example state progression
+
+If:
+
+er = EventRegistration(2)
+
+er.register("u1")
+er.register("u2")
+er.register("u3")
+
+State becomes:
+
+registered: [u1, u2]
+waitlist:   [u3]
+
+After:
+
+er.cancel("u1")
+
+State becomes:
+
+registered: [u2, u3]
+waitlist:   []
+
+If you want, I can also show you a cleaner version using collections.deque for the waitlist, which is more efficient and sometimes preferred in labs like EECS4312 / software design assignments.}
+
+prompt #2: {ok nice all 5 tests passed now add at least 5 more tests because i have to implement 5 more tests atlkeast to tests.py}
+response #2: {Great — since your implementation already passes the given tests, you can add additional edge-case tests. These help verify correctness for scenarios your assignment description mentioned (multiple cancellations, re-registration, status queries, etc.).
+
+You can add the following 5 extra tests to your tests.py (or test_solution.py). They follow the same style as your existing pytest tests.
+
+import pytest
+from solution import EventRegistration, UserStatus, DuplicateRequest, NotFound
+
+
+def test_multiple_cancellations_promote_multiple_users():
+    er = EventRegistration(capacity=2)
+
+    er.register("u1")
+    er.register("u2")
+    er.register("u3")
+    er.register("u4")
+
+    er.cancel("u1")
+    er.cancel("u2")
+
+    snap = er.snapshot()
+
+    assert snap["registered"] == ["u3", "u4"]
+    assert snap["waitlist"] == []
+
+
+def test_user_can_reregister_after_cancel():
+    er = EventRegistration(capacity=1)
+
+    er.register("u1")
+    er.cancel("u1")
+
+    status = er.register("u1")
+
+    assert status == UserStatus("registered")
+    assert er.snapshot()["registered"] == ["u1"]
+
+
+def test_status_returns_none_for_unknown_user():
+    er = EventRegistration(capacity=2)
+
+    er.register("u1")
+
+    assert er.status("unknown") == UserStatus("none")
+
+
+def test_waitlist_positions_update_after_multiple_changes():
+    er = EventRegistration(capacity=1)
+
+    er.register("u1")
+    er.register("u2")
+    er.register("u3")
+    er.register("u4")
+
+    er.cancel("u2")
+
+    assert er.status("u3") == UserStatus("waitlisted", 1)
+    assert er.status("u4") == UserStatus("waitlisted", 2)
+
+
+def test_cancel_nonexistent_user_raises_notfound():
+    er = EventRegistration(capacity=2)
+
+    er.register("u1")
+
+    with pytest.raises(NotFound):
+        er.cancel("u2")
+What these new tests check
+Test	Purpose
+test_multiple_cancellations_promote_multiple_users	Ensures promotions happen correctly for multiple cancellations
+test_user_can_reregister_after_cancel	Verifies re-registration after cancel works
+test_status_returns_none_for_unknown_user	Ensures status returns "none"
+test_waitlist_positions_update_after_multiple_changes	Confirms waitlist positions update properly
+test_cancel_nonexistent_user_raises_notfound	Checks correct exception for unknown user
+After adding them, run again
+pytest
+
+You should now see something like:
+
+collected 10 items
+.......... [100%]
+
+✅ If you want, I can also show you 5 more advanced tests professors often include in hidden tests (they catch ~80% of common mistakes students make in this lab).}
 --------------------------------------------------
