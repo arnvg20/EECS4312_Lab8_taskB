@@ -1,5 +1,5 @@
-## Student Name:
-## Student ID:
+## Student Name: Arnav Gupta
+## Student ID: 219973452
 
 """
 Task B: Event Registration with Waitlist (Stub)
@@ -73,7 +73,9 @@ class EventRegistration:
             capacity: maximum number of registered users (>= 0)
         """
         # TODO: Initialize internal data structures
-        raise NotImplementedError("EventRegistration.__init__ not implemented yet")
+        self.capacity = capacity
+        self.registered: List[str] = []
+        self.waitlist: List[str] = []
 
     def register(self, user_id: str) -> UserStatus:
         """
@@ -85,7 +87,16 @@ class EventRegistration:
             DuplicateRequest if user already exists (registered or waitlisted)
         """
         # TODO: Implement per lab handout
-        raise NotImplementedError("register not implemented yet")
+
+        if user_id in self.registered or user_id in self.waitlist:
+            raise DuplicateRequest()
+
+        if len(self.registered) < self.capacity:
+            self.registered.append(user_id)
+            return UserStatus("registered")
+
+        self.waitlist.append(user_id)
+        return UserStatus("waitlisted", len(self.waitlist))
 
     def cancel(self, user_id: str) -> None:
         """
@@ -98,7 +109,20 @@ class EventRegistration:
             NotFound (if required by handout)
         """
         # TODO: Implement per lab handout
-        raise NotImplementedError("cancel not implemented yet")
+
+        if user_id in self.registered:
+            self.registered.remove(user_id)
+
+            if self.waitlist and len(self.registered) < self.capacity:
+                promoted = self.waitlist.pop(0)
+                self.registered.append(promoted)
+            return
+
+        if user_id in self.waitlist:
+            self.waitlist.remove(user_id)
+            return
+
+        raise NotFound()
 
     def status(self, user_id: str) -> UserStatus:
         """
@@ -108,7 +132,14 @@ class EventRegistration:
           - none
         """
         # TODO: Implement per lab handout
-        raise NotImplementedError("status not implemented yet")
+
+        if user_id in self.registered:
+            return UserStatus("registered")
+
+        if user_id in self.waitlist:
+            return UserStatus("waitlisted", self.waitlist.index(user_id) + 1)
+
+        return UserStatus("none")
 
     def snapshot(self) -> dict:
         """
@@ -116,4 +147,8 @@ class EventRegistration:
         Return a deterministic snapshot of internal state.
         """
         # TODO: Implement if required/allowed
-        raise NotImplementedError("snapshot not implemented yet")
+
+        return {
+            "registered": list(self.registered),
+            "waitlist": list(self.waitlist)
+        }
