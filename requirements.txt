@@ -1,4 +1,159 @@
-## Student Name:
-## Student ID: 
+## Student Name: Arnav Gupta
+## Student ID: 219973452
 
-Requirements #1:
+Requirements #1: Problem Understanding
+
+System purpose:
+The system manages registration for a single event with a fixed capacity while supporting a FIFO waitlist for additional users.
+
+Inputs to the system:
+
+Event capacity
+
+User registration requests (register(user_id))
+
+Cancellation requests (cancel(user_id))
+
+Status queries (status(user_id))
+
+Outputs produced by the system:
+
+Updated registration state
+
+Ordered list of registered users
+
+Ordered FIFO waitlist
+
+User status results (registered, waitlisted, none)
+
+Exceptions for invalid operations
+
+Primary goal of the system:
+Ensure deterministic and consistent event registration behavior while enforcing capacity limits, preventing duplicate users, maintaining FIFO waitlist ordering, and automatically promoting waitlisted users when capacity becomes available.
+
+Requirements #2: Assumptions
+
+A1: Each user is uniquely identified by a user_id string.
+
+A2: The system manages registration for one event only.
+
+A3: Capacity is provided at initialization and does not change during runtime.
+
+A4: Operations (register, cancel, status) occur sequentially.
+
+A5: A user cannot appear more than once in the system.
+
+A6: Users cannot exist simultaneously in both registered and waitlisted states.
+
+Requirements #3: Functional Requirements
+
+FR1: The system shall allow users to register for the event until the event capacity is reached.
+
+FR2: The system shall place additional users into a FIFO waitlist when the event capacity is full.
+
+FR3: The system shall automatically promote the earliest waitlisted user when a registered user cancels.
+
+FR4: The system shall prevent duplicate registrations by raising an error if a user attempts to register more than once.
+
+FR5: The system shall allow users to cancel their registration or waitlist position.
+
+FR6: The system shall allow users to query their current status in the system.
+
+Requirements #4: System Constraints
+
+C1: The number of registered users must never exceed the defined event capacity.
+Derived from persona attribute: Jane - expects reliable automated system behavior.
+
+C2: Waitlisted users must be ordered using FIFO (first-in-first-out).
+Derived from persona attribute: Jane - predictable and stable system behavior.
+
+C3: The system must automatically promote the earliest waitlisted user when a registered user cancels.
+Derived from persona attribute: Jane - system resolves conflicts automatically.
+
+C4: A user may not appear more than once in the system.
+Derived from persona attribute: Mo - system must prevent inconsistent states.
+
+C5: A user cannot exist in multiple states simultaneously.
+Derived from persona attribute: Mo - explicit handling of system state.
+
+C6: The system must behave deterministically when performing registration, cancellation, and promotion operations.
+Derived from persona attribute: Mo - deterministic behavior requirement.
+
+Requirements #5: Acceptance Criteria
+
+AC1
+Given a system with available capacity
+When a user registers
+Then the user must be added to the registered list.
+
+Linked Constraint ID(s): C1
+
+AC2
+Given the event capacity is full
+When a user registers
+Then the user must be placed at the end of the waitlist.
+
+Linked Constraint ID(s): C2
+
+AC3
+Given a registered user cancels
+When the cancellation occurs
+Then the earliest waitlisted user must be promoted to registered.
+
+Linked Constraint ID(s): C3
+
+AC4
+Given a user attempts to register twice
+When the second registration occurs
+Then the system must raise a DuplicateRequest exception.
+
+Linked Constraint ID(s): C4
+
+AC5
+Given a waitlisted user cancels
+When the cancellation occurs
+Then the user must be removed and remaining waitlist positions updated.
+
+Linked Constraint ID(s): C5
+
+AC6
+Given identical operation sequences
+When the system processes them
+Then the resulting registered and waitlist order must be deterministic.
+
+Linked Constraint ID(s): C6
+
+Requirements #6: Edge Cases
+
+EC1
+Capacity is equal to zero.
+
+Expected system behavior:
+All users are placed in the waitlist and none are registered.
+
+EC2
+A waitlisted user cancels before being promoted.
+
+Expected system behavior:
+The user is removed and waitlist positions update accordingly.
+
+EC3
+Multiple registered users cancel in sequence.
+
+Expected system behavior:
+Waitlisted users are promoted in FIFO order until capacity is filled.
+
+EC4
+A user attempts to register again after canceling.
+
+Expected system behavior:
+The user may register again if they are no longer in the system.
+
+Requirements #7: Traceability
+
+FR1 → C1 → AC1
+FR2 → C2 → AC2
+FR3 → C3 → AC3
+FR4 → C4 → AC4
+FR5 → C5 → AC5
+FR6 → C6 → AC6
