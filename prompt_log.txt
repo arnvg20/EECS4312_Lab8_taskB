@@ -217,3 +217,115 @@ collected 10 items
 
 ✅ If you want, I can also show you 5 more advanced tests professors often include in hidden tests (they catch ~80% of common mistakes students make in this lab).}
 --------------------------------------------------
+
+Lab 9:
+
+Prompt #1
+
+Prompt text:
+I am implementing an Event Registration with Waitlist system in Python. The system must manage registration for a single event with fixed capacity. When capacity is reached, additional users must be placed in a FIFO waitlist. When a registered user cancels, the earliest waitlisted user must be promoted automatically.
+
+The system must also satisfy constraints derived from two personas:
+
+Jane Adams (Primary User)
+
+Busy professional who expects the system to resolve conflicts automatically
+
+Prefers predictable and consistent behavior
+
+Wants minimal manual interaction
+
+Mo Rodriguez (Edge User)
+
+Requires deterministic behavior
+
+Needs clear and consistent system outcomes
+
+Wants edge cases handled explicitly
+
+Constraints include:
+
+The system must never exceed capacity
+
+Waitlist ordering must follow FIFO
+
+Duplicate registrations must be prevented
+
+A user cannot exist in multiple states
+
+The system must behave deterministically under identical operations
+
+Acceptance criteria include correct waitlisting, promotion after cancellation, prevention of duplicate registration, and deterministic system state.
+
+Please review this specification and identify:
+
+Any missing constraints
+
+Ambiguous requirements
+
+Possible edge cases that should be handled before implementation.
+
+Response summary:
+The LLM suggested clarifying edge cases such as capacity equal to zero, users canceling from the waitlist, multiple sequential cancellations, and duplicate registration attempts. It also recommended ensuring deterministic ordering of the waitlist and preventing inconsistent system states.
+
+Decision: Accept — the suggested edge cases were added to the requirements and tests.
+
+Prompt #2
+
+Prompt text:
+Given the reviewed requirements for the Event Registration system, suggest a simple and deterministic data structure design in Python to maintain registered users and a FIFO waitlist while enforcing capacity constraints and preventing duplicate registrations.
+
+Response summary:
+The LLM suggested maintaining two lists: one for registered users and one for waitlisted users, and performing operations such as append, remove, and pop to maintain deterministic ordering.
+
+Decision: Accept — the design using two lists was used in the implementation.
+
+Prompt #3
+
+Prompt text:
+Review the Python implementation for an EventRegistration class that supports register, cancel, status, and snapshot operations while preserving the system invariants and FIFO waitlist behavior.
+
+Response summary:
+The LLM confirmed that the implementation preserves deterministic ordering, correctly handles cancellations and waitlist promotions, and maintains system invariants.
+
+Decision: Accept — implementation aligns with requirements and constraints.
+
+Prompt #4
+
+Prompt text:
+Generate a Python implementation for an Event Registration system that supports registration, cancellation, waitlisting, duplicate prevention, and FIFO promotion when capacity becomes available.
+
+Response summary:
+The LLM suggested using two lists to maintain registered users and a FIFO waitlist while enforcing capacity constraints and preventing duplicate registrations.
+
+Decision: Accept – the suggested structure was used in the final implementation.
+
+Prompt #5
+
+Prompt text:
+What edge cases should be tested for an Event Registration system that manages a fixed capacity event with a FIFO waitlist, supports cancellation, and prevents duplicate registrations?
+
+Response summary:
+The LLM suggested testing scenarios such as capacity equal to zero, duplicate registration attempts, multiple sequential cancellations, waitlisted users canceling before promotion, and querying the status of users not in the system.
+
+Decision: Accept – these edge cases were incorporated into the test suite in tests.py.
+
+Prompt #6
+
+Prompt text:
+Review the Python implementation of the EventRegistration class and confirm whether it maintains the following invariants: capacity is never exceeded, waitlist ordering remains FIFO, duplicate registrations are prevented, and users cannot exist in multiple states simultaneously.
+
+Response summary:
+The LLM reviewed the structure and confirmed that maintaining two lists (registered and waitlist) with proper checks for duplicates and FIFO promotion ensures that system invariants and deterministic behavior are preserved.
+
+Decision: Accept – the implementation was verified against the requirements and constraints.
+
+Prompt #7
+
+Prompt text:
+Check whether the existing tests for the Event Registration system adequately cover functional requirements and edge cases such as waitlist promotion, duplicate registration prevention, cancellation handling, and deterministic ordering.
+
+Response summary:
+The LLM confirmed that the tests cover the core functionality and suggested including tests for capacity equal to zero, waitlisted cancellations, and deterministic snapshot ordering.
+
+Decision: Accept – the suggested scenarios were verified and included in the final test suite.
