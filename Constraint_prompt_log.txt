@@ -1,6 +1,26 @@
-## Student Name:
-## Student ID: 
+## Student Name: Arnav Gupta
+## Student ID: 219973452
 
-Prompt #1: {}
-Response #1: {}
+Prompt #1: {I asked the LLM to help brainstorm possible system constraints derived from the two personas.}
+Purpose #1: {Brainstorm possible constraints and clarify how persona behaviors and needs translate into system constraints.}
+Response #1: {The LLM suggested constraints such as deterministic system behavior, preventing duplicate registrations, automatic promotion of waitlisted users, enforcing capacity limits, maintaining FIFO waitlist ordering, and handling edge cases such as capacity equal to zero.}
+
+CONSTRAINT SUMMARY TABLE
+
++------+-----------------------------------------------+--------------------+--------------------------------------------------------------+
+| ID   | Constraint                                    | Support Level      | Description                                                  |
++------+-----------------------------------------------+--------------------+--------------------------------------------------------------+
+| C1   | Capacity must not be exceeded                 | Fully supported    | Registered users never exceed the event capacity.           |
+| C2   | Prevent duplicate registrations               | Fully supported    | The system checks both registered and waitlist lists before |
+|      |                                               |                    | allowing a new registration.                                 |
+| C3   | Automatic waitlisting when capacity is full   | Fully supported    | If capacity is reached, new users are automatically placed  |
+|      |                                               |                    | on the waitlist.                                             |
+| C4   | FIFO waitlist ordering                        | Fully supported    | The waitlist maintains FIFO order using a list structure.   |
+| C5   | Promotion after cancellation                  | Fully supported    | When a registered user cancels, the earliest waitlisted     |
+|      |                                               |                    | user is promoted.                                            |
+| C6   | No dual states for a user                     | Fully supported    | A user cannot appear in both registered and waitlist lists. |
+| C7   | Deterministic system behavior                 | Fully supported    | The same sequence of operations produces the same results.  |
+| C8   | Edge case handling (capacity = 0)             | Fully supported    | If capacity is zero, all users are placed on the waitlist.  |
++------+-----------------------------------------------+--------------------+--------------------------------------------------------------+
+
 --------------------------------------------------
