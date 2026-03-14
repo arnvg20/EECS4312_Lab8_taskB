@@ -85,6 +85,8 @@ def test_capacity_zero_all_waitlisted_and_promotion_never_happens():
 # Add your own additional tests here to cover more cases and edge cases as needed.
 #################################################################################
 
+# Covers C3, AC3
+# Verifies that multiple cancellations promote waitlisted users in FIFO order
 def test_multiple_waitlist_promotions_after_cancellations():
     er = EventRegistration(capacity=2)
 
@@ -100,7 +102,8 @@ def test_multiple_waitlist_promotions_after_cancellations():
     assert snap["registered"] == ["u3", "u4"]
     assert snap["waitlist"] == []
 
-
+# Covers C4, AC4
+# Verifies that a user can re-register after being cancelled from the waitlist
 def test_reregister_after_being_waitlisted_and_cancelled():
     er = EventRegistration(capacity=1)
 
@@ -113,7 +116,8 @@ def test_reregister_after_being_waitlisted_and_cancelled():
 
     assert status == UserStatus("waitlisted", 1)
 
-
+# Covers C6, AC6
+# Verifies that querying a user not in the system returns "none"
 def test_status_of_nonexistent_user_returns_none():
     er = EventRegistration(capacity=3)
 
@@ -122,7 +126,8 @@ def test_status_of_nonexistent_user_returns_none():
 
     assert er.status("u5") == UserStatus("none")
 
-
+# Covers C2, C6, AC6
+# Verifies deterministic ordering of registered users after operations
 def test_snapshot_deterministic_order_after_operations():
     er = EventRegistration(capacity=2)
 
@@ -137,7 +142,8 @@ def test_snapshot_deterministic_order_after_operations():
     assert snap["registered"] == ["u2", "u3"]
     assert snap["waitlist"] == []
 
-
+# Covers C5, AC5
+# Verifies that a waitlisted user cancelling updates the waitlist correctly
 def test_waitlisted_user_cancels_before_promotion():
     er = EventRegistration(capacity=1)
 
@@ -152,3 +158,4 @@ def test_waitlisted_user_cancels_before_promotion():
     snap = er.snapshot()
     assert snap["registered"] == ["u1"]
     assert snap["waitlist"] == ["u3"]
+
